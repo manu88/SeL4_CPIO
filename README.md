@@ -29,7 +29,7 @@ int main(void)
 
 And we add a CMakeLists.txt inside projects/myapp :
 
-```
+```CMake
 cmake_minimum_required(VERSION 3.7.2)
 
 project(myapp C) # create a new C project called 'Hello' 
@@ -46,7 +46,7 @@ And we build. Everyting should build and run. Now, except for the new applicatio
 
 SeL4's build system has a method nammed `MakeCPIO`. This utility can take a list of binairies and bundle them inside an object file.  Inside the init's CMakeLists.txt, simply add (before `add_executable`) :
 
-```
+```CMake
 # list of apps to include in the cpio archive
 get_property(cpio_apps GLOBAL PROPERTY apps_property)
 MakeCPIO(archive.o "${cpio_apps}")
@@ -54,7 +54,7 @@ MakeCPIO(archive.o "${cpio_apps}")
 
 Then, the 'archive.o' has to be added to the executable binary :
 
-```
+```CMake
 add_executable(init src/main.c archive.o)
 ```
 
@@ -62,7 +62,7 @@ This archive will be added to the init-image.
 
 Now we have to add the custom app code to the list 'apps_property'. At the end of app's CMakeLists.txt:
 
-```
+```CMake
 set_property(GLOBAL APPEND PROPERTY apps_property "$<TARGET_FILE:app>")
 ```
 
@@ -75,13 +75,13 @@ With this method, we create a dependency between our application 'app' and init 
 
 To access the CPIO archive, seL4's util_libs provides `libcpio`, so we need to link init against it. In init's CMakeLists.txt :
 
-```
+```CMake
 target_link_libraries(init sel4muslcsys  muslc cpio) #  
 ``` 
 
 In init's source code, we need to include some header from `libcpio`, and declare an external variable to hold the CPIO archive's data:
 
-```
+```C
 #include <cpio/cpio.h>
 
 /* The linker will link this symbol to the start address  *
