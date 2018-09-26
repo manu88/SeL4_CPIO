@@ -11,7 +11,7 @@ MakeCPIO(archive.o "${cpio_apps}")
 
 add_executable(init src/main.c archive.o) # add files to our project. Paths are relative to this file.
 
-target_link_libraries(init sel4muslcsys  muslc cpio) # we need to link against the standard C lib for printf
+target_link_libraries(init sel4muslcsys sel4allocman sel4platsupport sel4 muslc cpio sel4utils ) 
 
 
 # Set this image as the rootserver
