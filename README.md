@@ -79,3 +79,15 @@ To access the CPIO archive, seL4's util_libs provides `libcpio`, so we need to l
 target_link_libraries(init sel4muslcsys  muslc cpio) #  
 ``` 
 
+In init's source code, we need to include some header from `libcpio`, and declare an external variable to hold the CPIO archive's data:
+
+```
+#include <cpio/cpio.h>
+
+/* The linker will link this symbol to the start address  *
+ * of an archive of attached applications.                */
+extern char _cpio_archive[];
+```
+
+Complete code to follow is here :
+<https://github.com/manu88/SeL4_CPIO/blob/master/projects/init/src/main.c>
