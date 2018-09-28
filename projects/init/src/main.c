@@ -46,7 +46,8 @@ UNUSED static int thread_2_stack[THREAD_2_STACK_SIZE];
 int main(void)
 {
     printf("init started\n");
-UNUSED int error = 0;
+
+    UNUSED int error = 0;
 
     /* get boot info */
     info = platsupport_get_bootinfo();
@@ -73,7 +74,7 @@ UNUSED int error = 0;
     allocman_make_vka(&vka, allocman);
 
 
-/* TASK 1: create a vspace object to manage our vspace */
+    /* TASK 1: create a vspace object to manage our vspace */
     /* hint 1: sel4utils_bootstrap_vspace_with_bootinfo_leaky()
      * int sel4utils_bootstrap_vspace_with_bootinfo_leaky(vspace_t *vspace, sel4utils_alloc_data_t *data, seL4_CPtr page_directory, vka_t *vka, seL4_BootInfo *info)
      * @param vspace Uninitialised vspace struct to populate.
@@ -125,95 +126,21 @@ UNUSED int error = 0;
                   "\tBe sure you've passed the correct component name for the new thread!\n");
 
 
-
-/* create an endpoint */
-    vka_object_t ep_object = {0};
-    error = vka_alloc_endpoint(&vka, &ep_object);
-    ZF_LOGF_IFERR(error, "Failed to allocate new endpoint object.\n");
-
- /*
-     * make a badged endpoint in the new process's cspace.  This copy
-     * will be used to send an IPC to the original cap
-     */
-
-    /* TASK 4: make a cspacepath for the new endpoint cap */
-    /* hint 1: vka_cspace_make_path()
-     * void vka_cspace_make_path(vka_t *vka, seL4_CPtr slot, cspacepath_t *res)
-     * @param vka Vka interface to use for allocation of objects.
-     * @param slot A cslot allocated by the cspace alloc function
-     * @param res Pointer to a cspacepath struct to fill out
-     * Link to source: https://wiki.sel4.systems/seL4%20Tutorial%204#TASK_4:
-     *
-     * hint 2: use the cslot of the endpoint allocated above
-     */
-    cspacepath_t ep_cap_path;
-    seL4_CPtr new_ep_cap = 0;
-    
-    vka_cspace_make_path(&vka , ep_object.cptr , &ep_cap_path);
-
-    /* TASK 5: copy the endpont cap and add a badge to the new cap */
-    /* hint 1: sel4utils_mint_cap_to_process()
-     * seL4_CPtr sel4utils_mint_cap_to_process(sel4utils_process_t *process, cspacepath_t src, seL4_CapRights rights, seL4_CapData_t data)
-     * @param process Process to copy the cap to
-     * @param src Path in the current cspace to copy the cap from
-     * @param rights The rights of the new cap
-     * @param data Extra data for the new cap (e.g., the badge)
-     * @return 0 on failure, otherwise the slot in the processes cspace.
-     * Link to source: https://wiki.sel4.systems/seL4%20Tutorial%204#TASK_5:
-     *
-     * hint 2: for the rights, use seL4_AllRights
-     * hint 3: for the badge use seL4_CapData_Badge_new()
-     * seL4_CapData_t CONST seL4_CapData_Badge_new(seL4_Uint32 Badge)
-     * @param[in] Badge The badge number to use
-     * @return A CapData structure containing the desired badge info
-     *
-     * seL4_CapData_t is generated during build.
-     * The type definition and generated field access functions are defined in a generated file:
-     * build/x86/pc99/libsel4/include/sel4/types_gen.h
-     * It is generated from the following definition:
-     * Link to source: https://wiki.sel4.systems/seL4%20Tutorial%204#TASK_5:
-     * You can find out more about it in the API manual: http://sel4.systems/Info/Docs/seL4-manual-3.0.0.pdf
-     *
-     * hint 4: for the badge value use EP_BADGE
-     */
-//     seL4_CapData_t badge = seL4_CapData_Badge_new(EP_BADGE);
-     new_ep_cap = sel4utils_mint_cap_to_process(&process , ep_cap_path , seL4_AllRights , EP_BADGE );
-
-    ZF_LOGF_IF(new_ep_cap == 0, "Failed to mint a badged copy of the IPC endpoint into the new thread's CSpace.\n"
-               "\tsel4utils_mint_cap_to_process takes a cspacepath_t: double check what you passed.\n");
-
-    printf("NEW CAP SLOT: %" PRIxPTR ".\n", ep_cap_path.capPtr);
-
-/* TASK 6: spawn the process */
-    /* hint 1: sel4utils_spawn_process_v()
-     * int sel4utils_spawn_process(sel4utils_process_t *process, vka_t *vka, vspace_t *vspace, int argc, char *argv[], int resume)
-     * @param process Initialised sel4utils process struct.
-     * @param vka Vka interface to use for allocation of frames.
-     * @param vspace The current vspace.
-     * @param argc The number of arguments.
-     * @param argv A pointer to an array of strings in the current vspace.
-     * @param resume 1 to start the process, 0 to leave suspended.
-     * @return 0 on success, -1 on error.
-     * Link to source: https://wiki.sel4.systems/seL4%20Tutorial%204#TASK_6:
-     */
-
     seL4_Word argc = 1;
     char string_args[argc][WORD_STRING_SIZE];
     char* argv[argc];
-    sel4utils_create_word_args(string_args, argv, argc, new_ep_cap);
-    
-    printf("Main : Start child \n");
+    sel4utils_create_word_args(string_args, argv, argc , 10);// pass a dummy arg
+ 
+    printf("init : Start child \n");
     error = sel4utils_spawn_process_v(&process , &vka , &vspace , argc, (char**) &argv , 1);
     ZF_LOGF_IFERR(error, "Failed to spawn and start the new thread.\n"
                   "\tVerify: the new thread is being executed in the root thread's VSpace.\n"
                   "\tIn this case, the CSpaces are different, but the VSpaces are the same.\n"
                   "\tDouble check your vspace_t argument.\n");
-    printf("Did start child \n");
-    /* we are done, say hello */
-    printf("main: hello world\n");
+    printf("init : Did start child \n");
 
-
-    while(1){}
-
+    // never return
+    while(1)
+    {}
     return 0;
 }
