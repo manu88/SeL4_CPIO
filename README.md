@@ -1,5 +1,8 @@
 # seL4 CPIO archive 
 
+This project is inspired by a tutorial from Sel4 : 
+<https://docs.sel4.systems/Tutorials/seL4_Tutorial_4.html>
+
 Uses projectPrepare script to setup the project
 
 our root server program will be called `init`, and its only task will be to load an application from the CPIO  archive.
