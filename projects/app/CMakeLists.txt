@@ -5,6 +5,8 @@ project(app C) # create a new C project called 'Hello'
 
 add_executable(app src/main.c) # add files to our project. Paths are relative to this file.
 
+set_property(TARGET app APPEND_STRING PROPERTY LINK_FLAGS " -u __vsyscall_ptr ")
+
 target_link_libraries(app sel4muslcsys  muslc) # we need to link against the standard C lib for printf
 
 
