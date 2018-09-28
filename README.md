@@ -8,14 +8,14 @@ SeL4's build system has tools to create the CPIO archive.
 
 ##Project Preparation
 
-Let's create an other application called `myApp`. As before, everything will be placed inside the project folder.
+Let's create an other application called `app`. As before, everything will be placed inside the project folder.
 
 ```
-mkdir projects/myapp
-mkdir projects/myapp/src 
+mkdir projects/app
+mkdir projects/app/src 
 ```
 
-Inside projects/myapp/src, we add the simpliest program :
+Inside projects/app/src, we add the simpliest program :
 
 ```C
 #include <stdio.h>
@@ -32,12 +32,16 @@ And we add a CMakeLists.txt inside projects/myapp :
 ```CMake
 cmake_minimum_required(VERSION 3.7.2)
 
-project(myapp C) # create a new C project called 'Hello' 
+project(app C) # create a new C project called 'app' 
 
 
-add_executable(myapp src/main.c) # add files to our project. Paths are relative to this file.
+add_executable(app src/main.c) # add files to our project. Paths are relative to this file.
 
-target_link_libraries(myapp sel4muslcsys  muslc) # we need to link against the standard C lib for printf
+# This one is SUPER important, otherwise you will get an error 
+# Caught cap fault in send phase at address
+set_property(TARGET app APPEND_STRING PROPERTY LINK_FLAGS " -u __vsyscall_ptr ")
+
+target_link_libraries(app sel4muslcsys  muslc) # we need to link against the standard C lib for printf
 ```
 
 And we build. Everyting should build and run. Now, except for the new application, this is still a one-stupid application project. We need to create the CPIO archive file; then make our `init` task parse it and exec `myapp` application
@@ -91,3 +95,18 @@ extern char _cpio_archive[];
 
 Complete code to follow is here :
 <https://github.com/manu88/SeL4_CPIO/blob/master/projects/init/src/main.c>
+
+## Build and run
+Just like the previous project:
+
+```Bash
+mkdir build
+cd build
+# configure
+../init-build.sh  -DPLATFORM=x86_64 -DSIMULATION=TRUE
+# make
+ninja
+#run (ctrl-A + X to quit qemu)
+./simulate
+```
+
