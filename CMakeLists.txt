@@ -8,7 +8,7 @@ endif()
 include(tools/cmake-tool/default-CMakeLists.txt)
 
 if(SIMULATION)
-        ApplyCommonSimulationSettings()
+        ApplyCommonSimulationSettings("x86")
 else()
         if(KernelArchX86)
                 set(KernelIOMMU ON CACHE BOOL "" FORCE)
@@ -20,7 +20,7 @@ endif()
 ApplyCommonReleaseVerificationSettings(FALSE FALSE)
 
 # Elfloader settings that correspond to how Data61 sets its boards up.
-ApplyData61ElfLoaderSettings()
+#ApplyData61ElfLoaderSettings()
 
 GenerateSimulateScript()
 
